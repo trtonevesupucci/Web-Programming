@@ -3,9 +3,75 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello World</title>
+    <title>Delicious Restaurant</title>
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/components.css">
 </head>
 <body>
-    <h1>Hello World!</h1>
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="#/" class="logo">🍽️ Burch Kantina</a>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <div class="nav-menu" id="navMenu">
+                <ul class="nav-list">
+                    <li><a href="#/" class="nav-link">Home</a></li>
+                    <li><a href="#/menu" class="nav-link">Menu</a></li>
+                    <li><a href="#/reservations" class="nav-link">Reservations</a></li>
+                    <li><a href="#/orders" class="nav-link" id="ordersLink">Orders</a></li>
+                    <li><a href="#/login" class="nav-link" id="loginLink">Login</a></li>
+                    <li><a href="#/register" class="nav-link btn-primary" id="registerLink">Sign Up</a></li>
+                    <li><a href="#/profile" class="nav-link" id="profileLink" style="display:none;">Profile</a></li>
+                    <li><a href="#/admin" class="nav-link" id="adminLink" style="display:none;">Dashboard</a></li>
+                    <li><button class="btn-logout" id="logoutBtn" style="display:none;">Logout</button></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main id="app">
+        <!-- Dynamic content will be loaded here -->
+        <div class="loading">Loading...</div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Burch Kantina</h3>
+                    <p>Bringing you the finest culinary experience since 2020.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#/">Home</a></li>
+                        <li><a href="#/menu">Menu</a></li>
+                        <li><a href="#/reservations">Reservations</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>📍 123 Food Street, City</p>
+                    <p>📞 +123 456 7890</p>
+                    <p>✉️ info@delicious.com</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Delicious Restaurant. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="assets/js/router.js"></script>
+    <script src="assets/js/app.js"></script>
 </body>
 </html>

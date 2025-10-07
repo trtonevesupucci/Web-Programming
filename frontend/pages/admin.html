@@ -1,0 +1,119 @@
+<div class="container">
+    <div class="section">
+        <h1 class="section-title">Admin Dashboard</h1>
+        
+        <!-- Statistics Cards -->
+        <div class="grid grid-4 mb-4">
+            <div class="card text-center">
+                <div style="font-size: 3rem; color: var(--primary-color);">📦</div>
+                <h3 id="totalOrders">0</h3>
+                <p>Total Orders</p>
+            </div>
+            <div class="card text-center">
+                <div style="font-size: 3rem; color: var(--success-color);">💰</div>
+                <h3 id="totalRevenue">$0</h3>
+                <p>Total Revenue</p>
+            </div>
+            <div class="card text-center">
+                <div style="font-size: 3rem; color: var(--secondary-color);">👥</div>
+                <h3 id="totalUsers">0</h3>
+                <p>Total Users</p>
+            </div>
+            <div class="card text-center">
+                <div style="font-size: 3rem; color: var(--warning-color);">📅</div>
+                <h3 id="pendingReservations">0</h3>
+                <p>Pending Reservations</p>
+            </div>
+        </div>
+        
+        <!-- Management Sections -->
+        <div class="grid grid-2">
+            <!-- Menu Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Menu Management</h3>
+                </div>
+                <div class="card-body">
+                    <p>Manage your restaurant menu items, categories, and pricing.</p>
+                    <button class="btn btn-primary" onclick="alert('Menu management coming in later milestones!')">Manage Menu Items</button>
+                    <button class="btn btn-outline mt-2" onclick="alert('Category management coming in later milestones!')">Manage Categories</button>
+                </div>
+            </div>
+            
+            <!-- Order Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Order Management</h3>
+                </div>
+                <div class="card-body">
+                    <p>View and manage customer orders and their statuses.</p>
+                    <button class="btn btn-primary" onclick="alert('Order management coming in later milestones!')">View All Orders</button>
+                    <button class="btn btn-outline mt-2" onclick="alert('Pending orders coming in later milestones!')">Pending Orders</button>
+                </div>
+            </div>
+            
+            <!-- Reservation Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Reservation Management</h3>
+                </div>
+                <div class="card-body">
+                    <p>Manage table reservations and availability.</p>
+                    <button class="btn btn-primary" onclick="alert('Reservation management coming in later milestones!')">View Reservations</button>
+                    <button class="btn btn-outline mt-2" onclick="alert('Table management coming in later milestones!')">Manage Tables</button>
+                </div>
+            </div>
+            
+            <!-- User Management -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">User Management</h3>
+                </div>
+                <div class="card-body">
+                    <p>Manage customer accounts and roles.</p>
+                    <button class="btn btn-primary" onclick="alert('User management coming in later milestones!')">View All Users</button>
+                    <button class="btn btn-outline mt-2" onclick="alert('Role management coming in later milestones!')">Manage Roles</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Activity -->
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3 class="card-title">Recent Activity</h3>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Activity</th>
+                            <th>User</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>10:30 AM</td>
+                            <td>New Order #156</td>
+                            <td>John Doe</td>
+                            <td><span class="badge badge-warning">Pending</span></td>
+                        </tr>
+                        <tr>
+                            <td>10:15 AM</td>
+                            <td>Reservation Confirmed</td>
+                            <td>Jane Smith</td>
+                            <td><span class="badge badge-success">Confirmed</span></td>
+                        </tr>
+                        <tr>
+                            <td>09:45 AM</td>
+                            <td>New User Registration</td>
+                            <td>Bob Wilson</td>
+                            <td><span class="badge badge-primary">Active</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

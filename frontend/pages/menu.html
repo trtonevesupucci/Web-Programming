@@ -1,0 +1,30 @@
+<div class="container">
+    <div class="section">
+        <h1 class="section-title">Our Menu</h1>
+        
+        <!-- Category Filters -->
+        <div class="text-center mb-4">
+            <button class="btn btn-primary" onclick="filterMenu('all')">All</button>
+            <button class="btn btn-outline" onclick="filterMenu('Appetizer')">Appetizers</button>
+            <button class="btn btn-outline" onclick="filterMenu('Main Course')">Main Course</button>
+            <button class="btn btn-outline" onclick="filterMenu('Dessert')">Desserts</button>
+        </div>
+
+        <!-- Menu Grid -->
+        <div class="grid grid-3" id="menuGrid">
+            <!-- Menu items will be dynamically loaded here by app.js -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Filter function for menu categories
+function filterMenu(category) {
+    // This will be enhanced with proper filtering in later milestones
+    console.log('Filter by:', category);
+    // For now, just reinitialize the menu
+    if (typeof initMenuPage === 'function') {
+        initMenuPage();
+    }
+}
+</script>
