@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Delicious Restaurant</title>
+    <title>Burch Kantina</title>
     <link rel="stylesheet" href="assets/css/main.css">
     <link rel="stylesheet" href="assets/css/components.css">
 </head>
@@ -12,7 +12,7 @@
     <nav class="navbar" id="navbar">
         <div class="container">
             <div class="nav-brand">
-                <a href="#/" class="logo">🍽️ Burch Kantina</a>
+                <a href="#home" class="logo">🍽️ Burch Kantina</a>
             </div>
             <button class="nav-toggle" id="navToggle">
                 <span></span>
@@ -21,24 +21,32 @@
             </button>
             <div class="nav-menu" id="navMenu">
                 <ul class="nav-list">
-                    <li><a href="#/" class="nav-link">Home</a></li>
-                    <li><a href="#/menu" class="nav-link">Menu</a></li>
-                    <li><a href="#/reservations" class="nav-link">Reservations</a></li>
-                    <li><a href="#/orders" class="nav-link" id="ordersLink">Orders</a></li>
-                    <li><a href="#/login" class="nav-link" id="loginLink">Login</a></li>
-                    <li><a href="#/register" class="nav-link btn-primary" id="registerLink">Sign Up</a></li>
-                    <li><a href="#/profile" class="nav-link" id="profileLink" style="display:none;">Profile</a></li>
-                    <li><a href="#/admin" class="nav-link" id="adminLink" style="display:none;">Dashboard</a></li>
+                    <li><a href="#home" class="nav-link">Home</a></li>
+                    <li><a href="#menu" class="nav-link">Menu</a></li>
+                    <li><a href="#reservations" class="nav-link">Reservations</a></li>
+                    <li><a href="#orders" class="nav-link" id="ordersLink">Orders</a></li>
+                    <li><a href="#login" class="nav-link" id="loginLink">Login</a></li>
+                    <li><a href="#register" class="nav-link btn-primary" id="registerLink">Sign Up</a></li>
+                    <li><a href="#profile" class="nav-link" id="profileLink" style="display:none;">Profile</a></li>
+                    <li><a href="#admin" class="nav-link" id="adminLink" style="display:none;">Dashboard</a></li>
                     <li><button class="btn-logout" id="logoutBtn" style="display:none;">Logout</button></li>
                 </ul>
             </div>
         </div>
     </nav>
 
-    <!-- Main Content Area -->
-    <main id="app">
-        <!-- Dynamic content will be loaded here -->
-        <div class="loading">Loading...</div>
+    
+    <main id="spapp">
+        
+        <section id="home" data-load="home.html"></section>
+        <section id="menu" data-load="menu.html"></section>
+        <section id="reservations" data-load="reservations.html"></section>
+        <section id="orders" data-load="orders.html"></section>
+        <section id="login" data-load="login.html"></section>
+        <section id="register" data-load="register.html"></section>
+        <section id="profile" data-load="profile.html"></section>
+        <section id="admin" data-load="admin.html"></section>
+        <section id="404" data-load="404.html"></section>
     </main>
 
     <!-- Footer -->
@@ -52,9 +60,9 @@
                 <div class="footer-section">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="#/">Home</a></li>
-                        <li><a href="#/menu">Menu</a></li>
-                        <li><a href="#/reservations">Reservations</a></li>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#menu">Menu</a></li>
+                        <li><a href="#reservations">Reservations</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
@@ -65,13 +73,18 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 Delicious Restaurant. All rights reserved.</p>
+                <p>&copy; 2025 Burch Kantina. All rights reserved.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script src="assets/js/router.js"></script>
+    
+    <script src="assets/js/jquery.min.js"></script>
+    
+    
+    <script src="assets/js/jquery.spapp.min.js"></script>
+    
+    
     <script src="assets/js/app.js"></script>
 </body>
 </html>
