@@ -5,10 +5,10 @@ ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// CORS Headers - Allow frontend to communicate with API
+// CORS Headers
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS, PATCH");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, Authentication");
 header("Content-Type: application/json; charset=UTF-8");
 
 // Handle preflight OPTIONS request
@@ -20,10 +20,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Load Composer autoloader
 require __DIR__ . '/vendor/autoload.php';
 
+// Fix URL parsing for subdirectory XAMPP installation
+// Remove /RijadTrtic/Web-Programming/backend/rest/index.php from the request path
+$base_path = '/RijadTrtic/Web-Programming/backend/rest/index.php';
+$request_path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+// Strip the base path if it's in the request
+if (strpos($request_path, $base_path) === 0) {
+    $request_path = substr($request_path, strlen($base_path));
+    if (empty($request_path)) {
+        $request_path = '/';
+    }
+    $_SERVER['REQUEST_URI'] = $request_path;
+}
+
 // Load Config
 require_once __DIR__ . '/config.php';
 
-// Load Services
+// Load Roles and Permissions
+require_once __DIR__ . '/data/roles.php';
+
+// Load Middleware
+require_once __DIR__ . '/middleware/AuthMiddleware.php';
+
+// Import JWT classes
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
+
+// Create a global variable to hold the authenticated user (since Flight context doesn't persist)
+$GLOBALS['authenticated_user'] = null;
+
+// Helper function to get authenticated user from token
+function getAuthenticatedUser() {
+    try {
+        // Get Authorization header using getallheaders() since Flight's getHeader might have issues
+        $headers = getallheaders();
+        $token = $headers['Authorization'] ?? null;
+        
+        if (!$token) {
+            error_log("DEBUG: No token in Authorization header");
+            return null;
+        }
+        
+        error_log("DEBUG: Token found, attempting to decode: " . substr($token, 0, 50) . "...");
+        
+        $decoded_token = JWT::decode($token, new Key(Config::JWT_SECRET(), 'HS256'));
+        error_log("DEBUG: Token decoded successfully");
+        error_log("DEBUG: User role: " . (is_object($decoded_token->user) ? $decoded_token->user->role : $decoded_token->user['role']));
+        
+        return $decoded_token->user;
+    } catch (\Exception $e) {
+        error_log("DEBUG: Token decode error: " . $e->getMessage());
+        return null;
+    }
+}
+
+// Load Auth Service (before other services)
+require_once __DIR__ . '/services/AuthService.php';
+
+// Load Other Services
 require_once __DIR__ . '/services/UserService.php';
 require_once __DIR__ . '/services/CategoryService.php';
 require_once __DIR__ . '/services/MenuItemService.php';
@@ -31,8 +86,15 @@ require_once __DIR__ . '/services/OrderService.php';
 require_once __DIR__ . '/services/OrderItemService.php';
 require_once __DIR__ . '/services/ReservationService.php';
 
-// Initialize Flight
-Flight::set('flight.log_errors', true);
+// Register Services with Flight
+Flight::register('auth_service', 'AuthService');
+Flight::register('userService', 'UserService');
+Flight::register('categoryService', 'CategoryService');
+Flight::register('menuItemService', 'MenuItemService');
+Flight::register('orderService', 'OrderService');
+Flight::register('orderItemService', 'OrderItemService');
+Flight::register('reservationService', 'ReservationService');
+Flight::register('auth_middleware', 'AuthMiddleware');
 
 // Error handler
 Flight::map('error', function(Exception $ex) {
@@ -50,317 +112,101 @@ Flight::map('notFound', function() {
     ], 404);
 });
 
-/**
- * ========================================
- * USER ROUTES
- * ========================================
- */
+// Debug: Log incoming requests (comment out in production)
+// error_log("Request URL: " . Flight::request()->url);
+// error_log("Request Method: " . Flight::request()->method);
 
-// GET /users - Get all users
-Flight::route('GET /users', function() {
-    $userService = new UserService();
-    $users = $userService->getAll();
-    Flight::json($users);
-});
+// Global Authentication using before hook
+Flight::before('route', function(&$route, &$params) {
+    // Public routes that don't require authentication
+    $public_routes = [
+        '/auth/login',
+        '/auth/register',
+        '/'
+    ];
 
-// GET /users/email/@email - Get user by email (MUST be before /users/@id)
-Flight::route('GET /users/email/@email', function($email) {
-    $userService = new UserService();
-    $user = $userService->getUserByEmail($email);
-    if ($user) {
-        Flight::json($user);
-    } else {
-        Flight::json(['error' => 'User not found'], 404);
+    $request_url = Flight::request()->url;
+    $is_public = false;
+
+    // Check if current route is public
+    foreach ($public_routes as $route_path) {
+        if (strpos($request_url, $route_path) === 0) {
+            $is_public = true;
+            break;
+        }
+    }
+
+    // If route is public, skip authentication
+    if ($is_public) {
+        return;
+    }
+
+    // For protected routes, verify JWT token exists
+    $headers = getallheaders();
+    $token = $headers['Authorization'] ?? null;
+    if (!$token) {
+        Flight::halt(401, json_encode(['error' => 'Missing authentication token']));
+    }
+
+    try {
+        // Just verify the token is valid
+        JWT::decode($token, new Key(Config::JWT_SECRET(), 'HS256'));
+    } catch (\Exception $e) {
+        Flight::halt(401, json_encode(['error' => 'Invalid token: ' . $e->getMessage()]));
     }
 });
 
-// GET /users/@id - Get user by ID
-Flight::route('GET /users/@id', function($id) {
-    $userService = new UserService();
-    $user = $userService->getById($id);
-    if ($user) {
-        Flight::json($user);
-    } else {
-        Flight::json(['error' => 'User not found'], 404);
-    }
-});
-
-// POST /users - Create new user
-Flight::route('POST /users', function() {
-    $data = Flight::request()->data->getData();
-    $userService = new UserService();
-    $user = $userService->add($data);
-    Flight::json($user, 201);
-});
-
-// PUT /users/@id - Update user
-Flight::route('PUT /users/@id', function($id) {
-    $data = Flight::request()->data->getData();
-    $userService = new UserService();
-    $user = $userService->update($id, $data);
-    Flight::json($user);
-});
-
-// DELETE /users/@id - Delete user
-Flight::route('DELETE /users/@id', function($id) {
-    $userService = new UserService();
-    $result = $userService->delete($id);
-    Flight::json(['success' => $result, 'message' => 'User deleted']);
-});
-
-/**
- * ========================================
- * CATEGORY ROUTES
- * ========================================
- */
-
-// GET /categories - Get all categories
-Flight::route('GET /categories', function() {
-    $categoryService = new CategoryService();
-    $categories = $categoryService->getAll();
-    Flight::json($categories);
-});
-
-// GET /categories/@id - Get category by ID
-Flight::route('GET /categories/@id', function($id) {
-    $categoryService = new CategoryService();
-    $category = $categoryService->getById($id);
-    if ($category) {
-        Flight::json($category);
-    } else {
-        Flight::json(['error' => 'Category not found'], 404);
-    }
-});
-
-// POST /categories - Create new category
-Flight::route('POST /categories', function() {
-    $data = Flight::request()->data->getData();
-    $categoryService = new CategoryService();
-    $category = $categoryService->add($data);
-    Flight::json($category, 201);
-});
-
-// PUT /categories/@id - Update category
-Flight::route('PUT /categories/@id', function($id) {
-    $data = Flight::request()->data->getData();
-    $categoryService = new CategoryService();
-    $category = $categoryService->update($id, $data);
-    Flight::json($category);
-});
-
-// DELETE /categories/@id - Delete category
-Flight::route('DELETE /categories/@id', function($id) {
-    $categoryService = new CategoryService();
-    $result = $categoryService->delete($id);
-    Flight::json(['success' => $result, 'message' => 'Category deleted']);
-});
-
-/**
- * ========================================
- * MENU ITEM ROUTES
- * ========================================
- */
-
-// GET /menu-items - Get all menu items
-Flight::route('GET /menu-items', function() {
-    $menuItemService = new MenuItemService();
-    $items = $menuItemService->getAll();
-    Flight::json($items);
-});
-
-// GET /menu-items/@id - Get menu item by ID
-Flight::route('GET /menu-items/@id', function($id) {
-    $menuItemService = new MenuItemService();
-    $item = $menuItemService->getById($id);
-    if ($item) {
-        Flight::json($item);
-    } else {
-        Flight::json(['error' => 'Menu item not found'], 404);
-    }
-});
-
-// GET /menu-items/category/@category_id - Get items by category
-Flight::route('GET /menu-items/category/@category_id', function($category_id) {
-    $menuItemService = new MenuItemService();
-    $items = $menuItemService->getByCategory($category_id);
-    Flight::json($items);
-});
-
-// GET /menu-items/available - Get available menu items
-Flight::route('GET /menu-items/available', function() {
-    $menuItemService = new MenuItemService();
-    $items = $menuItemService->getAvailableItems();
-    Flight::json($items);
-});
-
-// POST /menu-items - Create new menu item
-Flight::route('POST /menu-items', function() {
-    $data = Flight::request()->data->getData();
-    $menuItemService = new MenuItemService();
-    $item = $menuItemService->add($data);
-    Flight::json($item, 201);
-});
-
-// PUT /menu-items/@id - Update menu item
-Flight::route('PUT /menu-items/@id', function($id) {
-    $data = Flight::request()->data->getData();
-    $menuItemService = new MenuItemService();
-    $item = $menuItemService->update($id, $data);
-    Flight::json($item);
-});
-
-// DELETE /menu-items/@id - Delete menu item
-Flight::route('DELETE /menu-items/@id', function($id) {
-    $menuItemService = new MenuItemService();
-    $result = $menuItemService->delete($id);
-    Flight::json(['success' => $result, 'message' => 'Menu item deleted']);
-});
-
-/**
- * ========================================
- * ORDER ROUTES
- * ========================================
- */
-
-// GET /orders - Get all orders
-Flight::route('GET /orders', function() {
-    $orderService = new OrderService();
-    $orders = $orderService->getAll();
-    Flight::json($orders);
-});
-
-// GET /orders/@id - Get order by ID
-Flight::route('GET /orders/@id', function($id) {
-    $orderService = new OrderService();
-    $order = $orderService->getById($id);
-    if ($order) {
-        Flight::json($order);
-    } else {
-        Flight::json(['error' => 'Order not found'], 404);
-    }
-});
-
-// GET /orders/user/@user_id - Get orders by user
-Flight::route('GET /orders/user/@user_id', function($user_id) {
-    $orderService = new OrderService();
-    $orders = $orderService->getOrdersByUser($user_id);
-    Flight::json($orders);
-});
-
-// POST /orders - Create new order
-Flight::route('POST /orders', function() {
-    $data = Flight::request()->data->getData();
-    $orderService = new OrderService();
-    $order = $orderService->add($data);
-    Flight::json($order, 201);
-});
-
-// PUT /orders/@id - Update order
-Flight::route('PUT /orders/@id', function($id) {
-    $data = Flight::request()->data->getData();
-    $orderService = new OrderService();
-    $order = $orderService->update($id, $data);
-    Flight::json($order);
-});
-
-// PUT /orders/@id/status - Update order status
-Flight::route('PUT /orders/@id/status', function($id) {
-    $data = Flight::request()->data->getData();
-    $orderService = new OrderService();
-    $order = $orderService->updateStatus($id, $data['status']);
-    Flight::json($order);
-});
-
-// DELETE /orders/@id - Delete order
-Flight::route('DELETE /orders/@id', function($id) {
-    $orderService = new OrderService();
-    $result = $orderService->delete($id);
-    Flight::json(['success' => $result, 'message' => 'Order deleted']);
-});
-
-/**
- * ========================================
- * RESERVATION ROUTES
- * ========================================
- */
-
-// GET /reservations - Get all reservations
-Flight::route('GET /reservations', function() {
-    $reservationService = new ReservationService();
-    $reservations = $reservationService->getAll();
-    Flight::json($reservations);
-});
-
-// GET /reservations/@id - Get reservation by ID
-Flight::route('GET /reservations/@id', function($id) {
-    $reservationService = new ReservationService();
-    $reservation = $reservationService->getById($id);
-    if ($reservation) {
-        Flight::json($reservation);
-    } else {
-        Flight::json(['error' => 'Reservation not found'], 404);
-    }
-});
-
-// GET /reservations/user/@user_id - Get reservations by user
-Flight::route('GET /reservations/user/@user_id', function($user_id) {
-    $reservationService = new ReservationService();
-    $reservations = $reservationService->getReservationsByUser($user_id);
-    Flight::json($reservations);
-});
-
-// POST /reservations - Create new reservation
-Flight::route('POST /reservations', function() {
-    $data = Flight::request()->data->getData();
-    $reservationService = new ReservationService();
-    $reservation = $reservationService->add($data);
-    Flight::json($reservation, 201);
-});
-
-// PUT /reservations/@id - Update reservation
-Flight::route('PUT /reservations/@id', function($id) {
-    $data = Flight::request()->data->getData();
-    $reservationService = new ReservationService();
-    $reservation = $reservationService->update($id, $data);
-    Flight::json($reservation);
-});
-
-// PUT /reservations/@id/status - Update reservation status
-Flight::route('PUT /reservations/@id/status', function($id) {
-    $data = Flight::request()->data->getData();
-    $reservationService = new ReservationService();
-    $reservation = $reservationService->updateStatus($id, $data['status']);
-    Flight::json($reservation);
-});
-
-// DELETE /reservations/@id - Delete reservation
-Flight::route('DELETE /reservations/@id', function($id) {
-    $reservationService = new ReservationService();
-    $result = $reservationService->delete($id);
-    Flight::json(['success' => $result, 'message' => 'Reservation deleted']);
-});
-
-/**
- * ========================================
- * TEST ROUTE
- * ========================================
- */
-
-// GET / - Test route
+// Test route (public)
 Flight::route('GET /', function() {
     Flight::json([
-        'message' => 'Restaurant API',
+        'message' => 'Restaurant API - JWT Protected with RBAC',
         'version' => '1.0',
-        'endpoints' => [
-            'GET /users',
-            'GET /categories',
-            'GET /menu-items',
-            'GET /orders',
-            'GET /reservations'
+        'auth_endpoints' => [
+            'POST /auth/register - Register new user',
+            'POST /auth/login - Login and get JWT token'
+        ],
+        'protected_endpoints' => [
+            'GET /users - Get all users (admin only)',
+            'GET /categories - Get all categories',
+            'GET /menu-items - Get all menu items',
+            'GET /orders - Get user orders',
+            'GET /reservations - Get user reservations'
         ]
     ]);
 });
 
+// Debug endpoint - remove in production
+Flight::route('GET /debug/user', function() {
+    $user = getAuthenticatedUser();
+    
+    // Debug: check what headers are available
+    $all_headers = getallheaders();
+    
+    Flight::json([
+        'debug' => true,
+        'all_headers' => $all_headers,
+        'authentication_header' => Flight::request()->getHeader("Authentication"),
+        'auth_header_lowercase' => Flight::request()->getHeader("authentication"),
+        'user_set' => $user !== null,
+        'user_value' => $user,
+        'user_type' => gettype($user),
+        'user_role' => $user ? (is_object($user) ? $user->role : $user['role']) : 'N/A'
+    ]);
+});
+
+// Load Auth Routes (public - no JWT required)
+require_once __DIR__ . '/routes/AuthRoutes.php';
+
+// Load Protected Routes
+require_once __DIR__ . '/routes/UserRoutes.php';
+require_once __DIR__ . '/routes/CategoryRoutes.php';
+require_once __DIR__ . '/routes/MenuItemRoutes.php';
+require_once __DIR__ . '/routes/OrderRoutes.php';
+require_once __DIR__ . '/routes/ReservationRoutes.php';
+
 // Start the application
 Flight::start();
+
 ?>
+
+

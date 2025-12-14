@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/../dao/OrderDao.php';
 require_once __DIR__ . '/../dao/UserDao.php';
 
@@ -6,37 +7,15 @@ require_once __DIR__ . '/../dao/UserDao.php';
  * Order Service
  * Business logic for order operations
  */
-class OrderService
+class OrderService extends BaseService
 {
-    private $orderDao;
     private $userDao;
 
     public function __construct()
     {
-        $this->orderDao = new OrderDao();
+        $dao = new OrderDao();
+        parent::__construct($dao);
         $this->userDao = new UserDao();
-    }
-
-    /**
-     * Get all orders
-     * @return array
-     */
-    public function getAll()
-    {
-        return $this->orderDao->getAll();
-    }
-
-    /**
-     * Get order by ID
-     * @param int $id
-     * @return array|false
-     */
-    public function getById($id)
-    {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid order ID");
-        }
-        return $this->orderDao->getById($id);
     }
 
     /**
@@ -49,7 +28,7 @@ class OrderService
         if (!is_numeric($user_id) || $user_id <= 0) {
             throw new Exception("Invalid user ID");
         }
-        return $this->orderDao->getOrdersByUser($user_id);
+        return $this->dao->getOrdersByUser($user_id);
     }
 
     /**
@@ -63,7 +42,7 @@ class OrderService
         if (!in_array($status, $validStatuses)) {
             throw new Exception("Invalid status. Must be: " . implode(', ', $validStatuses));
         }
-        return $this->orderDao->getOrdersByStatus($status);
+        return $this->dao->getOrdersByStatus($status);
     }
 
     /**
@@ -76,11 +55,11 @@ class OrderService
         if (!is_numeric($order_id) || $order_id <= 0) {
             throw new Exception("Invalid order ID");
         }
-        return $this->orderDao->getOrderWithDetails($order_id);
+        return $this->dao->getOrderWithDetails($order_id);
     }
 
     /**
-     * Add new order
+     * Add new order (with validation)
      * @param array $data
      * @return array
      */
@@ -105,23 +84,19 @@ class OrderService
             $data['status'] = 'pending';
         }
 
-        return $this->orderDao->add($data);
+        return parent::add($data);
     }
 
     /**
-     * Update order
+     * Update order (with validation)
      * @param int $id
      * @param array $data
      * @return array
      */
     public function update($id, $data)
     {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid order ID");
-        }
-
         // Check if order exists
-        $existingOrder = $this->orderDao->getById($id);
+        $existingOrder = $this->dao->getById($id);
         if (!$existingOrder) {
             throw new Exception("Order not found");
         }
@@ -139,7 +114,7 @@ class OrderService
             }
         }
 
-        return $this->orderDao->update($data, $id);
+        return parent::update($id, $data);
     }
 
     /**
@@ -159,33 +134,12 @@ class OrderService
             throw new Exception("Invalid status. Must be: " . implode(', ', $validStatuses));
         }
 
-        // Check if order exists
-        $order = $this->orderDao->getById($id);
+        $order = $this->dao->getById($id);
         if (!$order) {
             throw new Exception("Order not found");
         }
 
-        return $this->orderDao->updateStatus($id, $status);
-    }
-
-    /**
-     * Delete order
-     * @param int $id
-     * @return bool
-     */
-    public function delete($id)
-    {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid order ID");
-        }
-
-        // Check if order exists
-        $order = $this->orderDao->getById($id);
-        if (!$order) {
-            throw new Exception("Order not found");
-        }
-
-        return $this->orderDao->delete($id);
+        return $this->dao->updateStatus($id, $status);
     }
 
     /**
@@ -194,18 +148,7 @@ class OrderService
      */
     public function getTotalRevenue()
     {
-        return $this->orderDao->getTotalRevenue();
-    }
-
-    /**
-     * Get orders count by date range
-     * @param string $start_date
-     * @param string $end_date
-     * @return int
-     */
-    public function getOrdersCountByDateRange($start_date, $end_date)
-    {
-        return $this->orderDao->getOrdersCountByDateRange($start_date, $end_date);
+        return $this->dao->getTotalRevenue();
     }
 }
 ?>

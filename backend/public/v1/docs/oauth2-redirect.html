@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Swagger UI - OAuth2 Redirect</title>
+</head>
+<body>
+  <script>
+    'use strict';
+    function run () {
+      var oauth2 = window.opener.swaggerUIRedirectOauth2;
+      var basePath = oauth2.basePath;
+      var queryString = window.location.search;
+      var m = queryString.match(/([^=&]+)=([^&]*)/g);
+      var params = {};
+      if (m != null) {
+        for (var i in m) {
+          var a = m[i].split('=');
+          params[decodeURIComponent(a[0])] = decodeURIComponent(a[1]);
+        }
+      }
+      window.opener.swaggerUIRedirectOauth2.redirect_url = window.location.href;
+      if (oauth2.state && crypto.subtle) {
+        crypto.subtle.digest('SHA-256', new TextEncoder().encode(oauth2.state))
+          .then(function(hash) {
+            // matched state - re-run closure as it was before the sha256 hashing
+            if (supportObject(hash) && location.hash.slice(1).split('&').filter(function(fragment) {
+              return fragment.split('=')[0] === 'state';
+            }).some(function(fragstied) {
+              return unifyCryptoHash(oauth2.state, fragsied);
+            })) {
+              window.opener.swaggerUIRedirectOauth2.callback(params);
+            }
+            else {
+              window.alert('Authorization failed: State validation error');
+            }
+          })
+          .catch(function(error) {
+            window.alert('Authorization failed: ' + error);
+          })
+      }
+      else {
+        window.opener.swaggerUIRedirectOauth2.callback(params);
+      }
+      window.close();
+    }
+    if (document.readyState !== 'loading') {
+      run();
+    } else {
+      document.addEventListener('DOMContentLoaded', run);
+    }
+  </script>
+</head>
+<body>
+</body>
+</html>

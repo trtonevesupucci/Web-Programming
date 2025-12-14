@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/../dao/MenuItemDao.php';
 require_once __DIR__ . '/../dao/CategoryDao.php';
 
@@ -6,37 +7,15 @@ require_once __DIR__ . '/../dao/CategoryDao.php';
  * MenuItem Service
  * Business logic for menu item operations
  */
-class MenuItemService
+class MenuItemService extends BaseService
 {
-    private $menuItemDao;
     private $categoryDao;
 
     public function __construct()
     {
-        $this->menuItemDao = new MenuItemDao();
+        $dao = new MenuItemDao();
+        parent::__construct($dao);
         $this->categoryDao = new CategoryDao();
-    }
-
-    /**
-     * Get all menu items
-     * @return array
-     */
-    public function getAll()
-    {
-        return $this->menuItemDao->getAll();
-    }
-
-    /**
-     * Get menu item by ID
-     * @param int $id
-     * @return array|false
-     */
-    public function getById($id)
-    {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid menu item ID");
-        }
-        return $this->menuItemDao->getById($id);
     }
 
     /**
@@ -49,7 +28,7 @@ class MenuItemService
         if (!is_numeric($category_id) || $category_id <= 0) {
             throw new Exception("Invalid category ID");
         }
-        return $this->menuItemDao->getByCategory($category_id);
+        return $this->dao->getByCategory($category_id);
     }
 
     /**
@@ -58,7 +37,7 @@ class MenuItemService
      */
     public function getAvailableItems()
     {
-        return $this->menuItemDao->getAvailableItems();
+        return $this->dao->getAvailableItems();
     }
 
     /**
@@ -67,7 +46,7 @@ class MenuItemService
      */
     public function getMenuItemsWithCategory()
     {
-        return $this->menuItemDao->getMenuItemsWithCategory();
+        return $this->dao->getMenuItemsWithCategory();
     }
 
     /**
@@ -80,11 +59,11 @@ class MenuItemService
         if (empty($search_term)) {
             throw new Exception("Search term is required");
         }
-        return $this->menuItemDao->searchByName($search_term);
+        return $this->dao->searchByName($search_term);
     }
 
     /**
-     * Add new menu item
+     * Add new menu item (with validation)
      * @param array $data
      * @return array
      */
@@ -112,23 +91,19 @@ class MenuItemService
             $data['is_available'] = true;
         }
 
-        return $this->menuItemDao->add($data);
+        return parent::add($data);
     }
 
     /**
-     * Update menu item
+     * Update menu item (with validation)
      * @param int $id
      * @param array $data
      * @return array
      */
     public function update($id, $data)
     {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid menu item ID");
-        }
-
         // Check if menu item exists
-        $existingItem = $this->menuItemDao->getById($id);
+        $existingItem = $this->dao->getById($id);
         if (!$existingItem) {
             throw new Exception("Menu item not found");
         }
@@ -149,7 +124,7 @@ class MenuItemService
             }
         }
 
-        return $this->menuItemDao->update($data, $id);
+        return parent::update($id, $data);
     }
 
     /**
@@ -164,33 +139,12 @@ class MenuItemService
             throw new Exception("Invalid menu item ID");
         }
 
-        // Check if menu item exists
-        $item = $this->menuItemDao->getById($id);
+        $item = $this->dao->getById($id);
         if (!$item) {
             throw new Exception("Menu item not found");
         }
 
-        return $this->menuItemDao->updateAvailability($id, $is_available);
-    }
-
-    /**
-     * Delete menu item
-     * @param int $id
-     * @return bool
-     */
-    public function delete($id)
-    {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid menu item ID");
-        }
-
-        // Check if menu item exists
-        $item = $this->menuItemDao->getById($id);
-        if (!$item) {
-            throw new Exception("Menu item not found");
-        }
-
-        return $this->menuItemDao->delete($id);
+        return $this->dao->updateAvailability($id, $is_available);
     }
 }
 ?>

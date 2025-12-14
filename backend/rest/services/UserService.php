@@ -1,39 +1,17 @@
 <?php
+require_once __DIR__ . '/BaseService.php';
 require_once __DIR__ . '/../dao/UserDao.php';
 
 /**
  * User Service
  * Business logic for user operations
  */
-class UserService
+class UserService extends BaseService
 {
-    private $userDao;
-
     public function __construct()
     {
-        $this->userDao = new UserDao();
-    }
-
-    /**
-     * Get all users
-     * @return array
-     */
-    public function getAll()
-    {
-        return $this->userDao->getAll();
-    }
-
-    /**
-     * Get user by ID
-     * @param int $id
-     * @return array|false
-     */
-    public function getById($id)
-    {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid user ID");
-        }
-        return $this->userDao->getById($id);
+        $dao = new UserDao();
+        parent::__construct($dao);
     }
 
     /**
@@ -46,7 +24,7 @@ class UserService
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             throw new Exception("Invalid email format");
         }
-        return $this->userDao->getUserByEmail($email);
+        return $this->dao->getUserByEmail($email);
     }
 
     /**
@@ -60,11 +38,11 @@ class UserService
         if (!in_array($role, $validRoles)) {
             throw new Exception("Invalid role. Must be: customer, admin, or staff");
         }
-        return $this->userDao->getUsersByRole($role);
+        return $this->dao->getUsersByRole($role);
     }
 
     /**
-     * Add new user
+     * Add new user (with validation)
      * @param array $data
      * @return array
      */
@@ -85,7 +63,7 @@ class UserService
         }
 
         // Check if email already exists
-        if ($this->userDao->emailExists($data['email'])) {
+        if ($this->dao->emailExists($data['email'])) {
             throw new Exception("Email already exists");
         }
 
@@ -97,23 +75,19 @@ class UserService
             $data['role'] = 'customer';
         }
 
-        return $this->userDao->add($data);
+        return parent::add($data);
     }
 
     /**
-     * Update user
+     * Update user (with validation)
      * @param int $id
      * @param array $data
      * @return array
      */
     public function update($id, $data)
     {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid user ID");
-        }
-
         // Check if user exists
-        $existingUser = $this->userDao->getById($id);
+        $existingUser = $this->dao->getById($id);
         if (!$existingUser) {
             throw new Exception("User not found");
         }
@@ -130,31 +104,10 @@ class UserService
             }
             $data['password'] = password_hash($data['password'], PASSWORD_DEFAULT);
         } else {
-            // Don't update password if not provided
             unset($data['password']);
         }
 
-        return $this->userDao->update($data, $id);
-    }
-
-    /**
-     * Delete user
-     * @param int $id
-     * @return bool
-     */
-    public function delete($id)
-    {
-        if (!is_numeric($id) || $id <= 0) {
-            throw new Exception("Invalid user ID");
-        }
-
-        // Check if user exists
-        $user = $this->userDao->getById($id);
-        if (!$user) {
-            throw new Exception("User not found");
-        }
-
-        return $this->userDao->delete($id);
+        return parent::update($id, $data);
     }
 
     /**
@@ -169,7 +122,7 @@ class UserService
             throw new Exception("Invalid email format");
         }
 
-        $user = $this->userDao->getUserByEmail($email);
+        $user = $this->dao->getUserByEmail($email);
         
         if (!$user) {
             throw new Exception("Invalid credentials");
