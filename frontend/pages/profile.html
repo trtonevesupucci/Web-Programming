@@ -1,33 +1,57 @@
-<div class="container">
-    <div class="section">
-        <h1 class="section-title">My Profile</h1>
-        
-        <div class="grid grid-2">
-            <!-- Profile Information -->
+<div class="container mt-5">
+    <h1 class="mb-4">My Profile</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
-                    <h3 class="card-title">Profile Information</h3>
+                    <h5 class="card-title mb-0">Profile Information</h5>
                 </div>
                 <div class="card-body">
-                    <div style="text-align: center; margin-bottom: 2rem;">
-                        <div style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); display: flex; align-items: center; justify-content: center; margin: 0 auto; font-size: 3rem; color: white;">
-                            👤
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Name</strong></label>
+                        <p id="userName" class="form-control-plaintext">Loading...</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Name</label>
-                        <p class="form-control" style="background-color: var(--bg-light);" id="userName">Loading...</p>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Email</strong></label>
+                        <p id="userEmail" class="form-control-plaintext">Loading...</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Email</label>
-                        <p class="form-control" style="background-color: var(--bg-light);" id="userEmail">Loading...</p>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Phone</strong></label>
+                        <p id="userPhone" class="form-control-plaintext">Loading...</p>
                     </div>
-                    
-                    <div class="form-group">
-                        <label class="form-label">Role</label>
-                        <p class="form-control" style="background-color: var(--bg-light);" id="userRole">Loading...</p>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Role</strong></label>
+                        <p id="userRole" class="form-control-plaintext"><span class="badge bg-info">Loading...</span></p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Member Since</strong></label>
+                        <p id="userJoined" class="form-control-plaintext">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../utils/constants.js"></script>
+<script src="../utils/utils.js"></script>
+<script src="../utils/rest-client.js"></script>
+<script>
+    $(document).ready(function() {
+        const token = localStorage.getItem("user_token");
+        const decodedToken = Utils.parseJwt(token);
+        
+        if (decodedToken && decodedToken.user) {
+            const user = decodedToken.user;
+            $('#userName').text(user.name || 'N/A');
+            $('#userEmail').text(user.email || 'N/A');
+            $('#userPhone').text(user.phone || 'N/A');
+            $('#userRole').html(`<span class="badge ${user.role === 'admin' ? 'bg-danger' : 'bg-info'}">${user.role}</span>`);
+            $('#userJoined').text(user.created_at ? user.created_at.split(' ')[0] : 'N/A');
+        }
+    });
+</script>
                     </div>
                     
                     <button class="btn btn-primary" style="width: 100%;" onclick="alert('Edit profile functionality coming in later milestones!')">Edit Profile</button>

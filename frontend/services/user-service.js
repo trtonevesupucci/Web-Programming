@@ -2,7 +2,7 @@ var UserService = {
   init: function () {
     var token = localStorage.getItem("user_token");
     if (token && token !== undefined) {
-      window.location.replace("index.html");
+      window.location.replace("../index.html");
     }
     $("#login-form").validate({
       submitHandler: function (form) {
@@ -22,7 +22,7 @@ var UserService = {
       success: function (result) {
         console.log(result);
         localStorage.setItem("user_token", result.data.token);
-        window.location.replace("index.html");
+        window.location.replace("../index.html");
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
         toastr.error(XMLHttpRequest?.responseJSON?.error || XMLHttpRequest?.responseText || "Login failed");
@@ -32,7 +32,7 @@ var UserService = {
 
   logout: function () {
     localStorage.clear();
-    window.location.replace("login.html");
+    window.location.replace("pages/login.html");
   },
 
   generateMenuItems: function () {
@@ -40,7 +40,7 @@ var UserService = {
     const decodedToken = Utils.parseJwt(token);
     
     if (!decodedToken || !decodedToken.user) {
-      window.location.replace("login.html");
+      window.location.replace("pages/login.html");
       return;
     }
 
@@ -129,10 +129,10 @@ var UserService = {
           break;
 
         default:
-          window.location.replace("login.html");
+          window.location.replace("pages/login.html");
       }
     } else {
-      window.location.replace("login.html");
+      window.location.replace("pages/login.html");
     }
   }
 };

@@ -1,0 +1,51 @@
+<div class="container mt-5">
+    <h1 class="mb-4">Reservations Management</h1>
+    <table id="reservations-table" class="table table-striped table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Guests</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+</div>
+
+<script src="../../utils/constants.js"></script>
+<script src="../../utils/utils.js"></script>
+<script src="../../utils/rest-client.js"></script>
+<script>
+    $(document).ready(function() {
+        RestClient.get('reservations', function(data) {
+            let tbody = $('#reservations-table tbody');
+            tbody.empty();
+            data.forEach(res => {
+                let statusBadge = 'badge-warning';
+                if (res.status === 'confirmed') statusBadge = 'badge-success';
+                if (res.status === 'cancelled') statusBadge = 'badge-danger';
+                
+                tbody.append(`
+                    <tr>
+                        <td>#${res.id}</td>
+                        <td>${res.user_id || 'N/A'}</td>
+                        <td>${res.reservation_date || 'N/A'}</td>
+                        <td>${res.reservation_time || 'N/A'}</td>
+                        <td>${res.number_of_guests || 0}</td>
+                        <td><span class="badge ${statusBadge}">${res.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">Update</button>
+                            <button class="btn btn-sm btn-danger">Cancel</button>
+                        </td>
+                    </tr>
+                `);
+            });
+        }, function(err) {
+            toastr.error('Failed to load reservations');
+        });
+    });
+</script>
