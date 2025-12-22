@@ -1,23 +1,17 @@
-<div class="container">
-    <div class="section">
-        <h1 class="section-title">Our Menu</h1>
-        
-        <!-- Category Filters -->
-        <div class="text-center mb-4">
-            <button class="btn btn-primary" onclick="filterMenu('all')">All</button>
-            <button class="btn btn-outline" onclick="filterMenu('Appetizer')">Appetizers</button>
-            <button class="btn btn-outline" onclick="filterMenu('Main Course')">Main Course</button>
-            <button class="btn btn-outline" onclick="filterMenu('Dessert')">Desserts</button>
-        </div>
-
-        <!-- Menu Grid -->
-        <div class="grid grid-3" id="menuGrid">
-            <!-- Menu items will be dynamically loaded here by app.js -->
-        </div>
+<div class="container mt-5">
+    <h1 class="mb-4">Our Menu</h1>
+    <div id="menu-items-container" class="row">
+        <!-- Menu items will be loaded here by AJAX -->
     </div>
 </div>
 
+<script src="../utils/constants.js"></script>
+<script src="../utils/utils.js"></script>
+<script src="../utils/rest-client.js"></script>
+<script src="../services/menu-service.js"></script>
 <script>
+    MenuService.init();
+</script>
 // Filter function for menu categories
 function filterMenu(category) {
     // This will be enhanced with proper filtering in later milestones

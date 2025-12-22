@@ -5,7 +5,7 @@
             
             <div class="card">
                 <div class="card-body">
-                    <form id="loginForm">
+                    <form id="login-form">
                         <div class="form-group">
                             <label for="email" class="form-label">Email Address</label>
                             <input type="email" id="email" name="email" class="form-control" placeholder="your@email.com" required>
@@ -16,25 +16,18 @@
                             <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
                         </div>
                         
-                        <div class="form-group">
-                            <label style="display: flex; align-items: center; gap: 0.5rem;">
-                                <input type="checkbox" name="remember" style="width: auto;">
-                                Remember me
-                            </label>
-                        </div>
-                        
                         <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
                     </form>
                     
                     <div class="text-center mt-3">
-                        <p>Don't have an account? <a href="#/register" style="color: var(--primary-color); font-weight: bold;">Sign up here</a></p>
+                        <p>Don't have an account? <a href="register.html" style="color: var(--primary-color); font-weight: bold;">Sign up here</a></p>
                     </div>
                     
                     <div class="mt-3 p-2" style="background-color: var(--bg-light); border-radius: 5px;">
                         <p class="text-center" style="margin: 0; font-size: 0.9rem;">
                             <strong>Demo Accounts:</strong><br>
-                            Customer: any email + password<br>
-                            Admin: admin@test.com + any password
+                            Admin: testadmin@test.com / password123<br>
+                            Customer: testcustomer@test.com / password123
                         </p>
                     </div>
                 </div>
@@ -42,3 +35,14 @@
         </div>
     </div>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.17.0/jquery.validate.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastr@2.1.4/build/toastr.min.js"></script>
+<script src="../utils/constants.js"></script>
+<script src="../utils/utils.js"></script>
+<script src="../utils/rest-client.js"></script>
+<script src="../services/user-service.js"></script>
+<script>
+  UserService.init();
+</script>

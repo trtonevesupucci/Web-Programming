@@ -52,12 +52,12 @@ class Config
     }
 
     /**
-     
+     * JWT Secret Key for token encoding/decoding
      * @return string
      */
     public static function JWT_SECRET()
     {
-        return 'your_secret_key_change_this_in_production';
+        return 'restaurant_api_super_secret_key_2025_rijad_trtic_web_programming';
     }
 }
 ?>
